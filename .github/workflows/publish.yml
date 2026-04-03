@@ -80,10 +80,15 @@ jobs:
         env:
           NPM_CONFIG_USERCONFIG: /home/runner/.npmrc
 
+      - name: Check OIDC environment
+        run: |
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:-NOT SET}"
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN length: ${#ACTIONS_ID_TOKEN_REQUEST_TOKEN}"
+
       - name: Publish to npm
         if: ${{ github.event.inputs.dry-run != 'true' }}
         run: |
           npm config list
-          npm publish --access public --provenance --verbose 2>&1 || (cat /home/runner/.npm/_logs/*.log && exit 1)
+          npm publish --access public --provenance
         env:
           NPM_CONFIG_USERCONFIG: /home/runner/.npmrc
