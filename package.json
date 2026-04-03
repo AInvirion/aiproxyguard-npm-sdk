@@ -1,6 +1,6 @@
 {
   "name": "@ainvirion/aiproxyguard-sdk",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Official TypeScript/JavaScript SDK for AIProxyGuard - LLM security proxy for prompt injection detection",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
