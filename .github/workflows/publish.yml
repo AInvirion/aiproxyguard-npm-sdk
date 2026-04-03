@@ -58,12 +58,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-
-      - name: Ensure clean npmrc
-        run: |
-          rm -f "$HOME/.npmrc"
-          printf "registry=https://registry.npmjs.org/\n" > "$HOME/.npmrc"
-          cat "$HOME/.npmrc"
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci
@@ -77,18 +72,7 @@ jobs:
       - name: Publish (dry run)
         if: ${{ github.event.inputs.dry-run == 'true' }}
         run: npm publish --dry-run --access public --provenance
-        env:
-          NPM_CONFIG_USERCONFIG: /home/runner/.npmrc
-
-      - name: Check OIDC environment
-        run: |
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:-NOT SET}"
-          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN length: ${#ACTIONS_ID_TOKEN_REQUEST_TOKEN}"
 
       - name: Publish to npm
         if: ${{ github.event.inputs.dry-run != 'true' }}
-        run: |
-          npm config list
-          npm publish --access public --provenance
-        env:
-          NPM_CONFIG_USERCONFIG: /home/runner/.npmrc
+        run: npm publish --access public --provenance
