@@ -58,6 +58,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci
@@ -68,14 +69,17 @@ jobs:
           name: dist
           path: dist/
 
+      - name: Debug npm config
+        run: |
+          npm --version
+          cat ~/.npmrc || true
+          echo "---"
+          npm config list
+
       - name: Publish (dry run)
         if: ${{ github.event.inputs.dry-run == 'true' }}
         run: npm publish --dry-run --access public --provenance
-        env:
-          NPM_CONFIG_PROVENANCE: 'true'
 
       - name: Publish to npm
         if: ${{ github.event.inputs.dry-run != 'true' }}
         run: npm publish --access public --provenance
-        env:
-          NPM_CONFIG_PROVENANCE: 'true'
