@@ -82,6 +82,8 @@ jobs:
 
       - name: Publish to npm
         if: ${{ github.event.inputs.dry-run != 'true' }}
-        run: npm publish --access public --provenance
+        run: |
+          npm config list
+          npm publish --access public --provenance --verbose 2>&1 || (cat /home/runner/.npm/_logs/*.log && exit 1)
         env:
           NPM_CONFIG_USERCONFIG: /home/runner/.npmrc
