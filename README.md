@@ -1,6 +1,6 @@
-# @aiproxyguard/sdk
+# @ainvirion/aiproxyguard-npm-sdk
 
-[![npm version](https://img.shields.io/npm/v/@aiproxyguard/sdk.svg)](https://www.npmjs.com/package/@aiproxyguard/sdk)
+[![npm version](https://img.shields.io/npm/v/@ainvirion/aiproxyguard-npm-sdk.svg)](https://www.npmjs.com/package/@ainvirion/aiproxyguard-npm-sdk)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
@@ -19,21 +19,21 @@ Official TypeScript/JavaScript SDK for [AIProxyGuard](https://aiproxyguard.com) 
 ## Installation
 
 ```bash
-npm install @aiproxyguard/sdk
+npm install @ainvirion/aiproxyguard-npm-sdk
 ```
 
 ```bash
-yarn add @aiproxyguard/sdk
+yarn add @ainvirion/aiproxyguard-npm-sdk
 ```
 
 ```bash
-pnpm add @aiproxyguard/sdk
+pnpm add @ainvirion/aiproxyguard-npm-sdk
 ```
 
 ## Quick Start
 
 ```typescript
-import { AIProxyGuard } from '@aiproxyguard/sdk';
+import { AIProxyGuard } from '@ainvirion/aiproxyguard-npm-sdk';
 
 // Initialize with your API key
 const client = new AIProxyGuard({
@@ -52,26 +52,29 @@ if (result.flagged) {
 
 ## API Modes
 
-The SDK supports two API modes, auto-detected from the URL:
+The SDK supports two ways to use AIProxyGuard:
 
-| Mode | URL | Use Case |
-|------|-----|----------|
-| `cloud` | `aiproxyguard.com` | Managed service, no infrastructure |
-| `proxy` | `docker.aiproxyguard.com` | Self-hosted, lower latency |
+| Mode | Use Case |
+|------|----------|
+| **Cloud API** | Managed service at `aiproxyguard.com`, requires free API key |
+| **Self-hosted proxy** | Deploy your own proxy (free), no API key required |
 
 ```typescript
-// Cloud mode (default)
+// Cloud API - managed service (requires free API key)
 const cloud = new AIProxyGuard({ apiKey: 'apg_xxx' });
 
-// Proxy mode (auto-detected from docker.* URL)
-const proxy = new AIProxyGuard('https://docker.aiproxyguard.com');
-
-// Explicit mode override
-const explicit = new AIProxyGuard({
-  baseUrl: 'https://your-instance.com',
-  mode: 'proxy',
-});
+// Self-hosted proxy - no API key required
+const proxy = new AIProxyGuard('http://localhost:8080');
 ```
+
+### Getting an API Key (Cloud Mode)
+
+API keys are **free**. To use the cloud API:
+
+1. Sign up at [aiproxyguard.com](https://aiproxyguard.com)
+2. Go to **Settings** → **API Keys** → **Create API Key**
+3. **Enable the `check` scope** in permissions
+4. Copy your key (starts with `apg_`)
 
 ## Configuration
 
@@ -152,7 +155,7 @@ Protect your Express routes with automatic prompt injection detection.
 
 ```typescript
 import express from 'express';
-import { AIProxyGuard, guardMiddleware } from '@aiproxyguard/sdk';
+import { AIProxyGuard, guardMiddleware } from '@ainvirion/aiproxyguard-npm-sdk';
 
 const app = express();
 const client = new AIProxyGuard({ apiKey: process.env.AIPROXYGUARD_API_KEY });
@@ -183,7 +186,7 @@ app.post('/api/chat', guardMiddleware(client, {
 ## Helper Functions
 
 ```typescript
-import { isSafe, isBlocked } from '@aiproxyguard/sdk';
+import { isSafe, isBlocked } from '@ainvirion/aiproxyguard-npm-sdk';
 
 const result = await client.check(text);
 
@@ -206,7 +209,7 @@ import {
   TimeoutError,
   RateLimitError,
   ConnectionError,
-} from '@aiproxyguard/sdk';
+} from '@ainvirion/aiproxyguard-npm-sdk';
 
 try {
   const result = await client.check(text);
@@ -236,7 +239,7 @@ import type {
   CheckResult,         // Result from check()
   Threat,              // { type, confidence, rule }
   AIProxyGuardConfig,  // Constructor config
-} from '@aiproxyguard/sdk';
+} from '@ainvirion/aiproxyguard-npm-sdk';
 ```
 
 ## Security Features
@@ -250,13 +253,6 @@ import type {
 
 - Node.js 18+ (uses native `fetch`)
 - TypeScript 5.0+ (for type definitions)
-
-## Getting an API Key
-
-1. Sign up at [aiproxyguard.com](https://aiproxyguard.com)
-2. Navigate to **Settings** → **API Keys**
-3. Click **Create API Key**
-4. Copy your key (starts with `apg_`)
 
 ## Documentation
 

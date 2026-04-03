@@ -22,10 +22,14 @@ const DEFAULT_CONCURRENCY = 10; // Max concurrent requests in checkBatch
 
 /**
  * Detect API mode based on URL.
- * URLs containing 'docker.' use proxy mode, otherwise cloud mode.
+ * Cloud mode if URL contains 'aiproxyguard.com' (but not 'docker.'),
+ * otherwise proxy mode (self-hosted, localhost, etc).
  */
 function detectMode(url: string): 'cloud' | 'proxy' {
-  return url.includes('docker.') ? 'proxy' : 'cloud';
+  if (url.includes('aiproxyguard.com') && !url.includes('docker.')) {
+    return 'cloud';
+  }
+  return 'proxy';
 }
 
 /**
