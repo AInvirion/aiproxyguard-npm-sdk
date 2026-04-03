@@ -1,6 +1,20 @@
 # @aiproxyguard/sdk
 
-Official TypeScript/JavaScript SDK for [AIProxyGuard](https://aiproxyguard.com) - an LLM security proxy that detects prompt injection attacks.
+[![npm version](https://img.shields.io/npm/v/@aiproxyguard/sdk.svg)](https://www.npmjs.com/package/@aiproxyguard/sdk)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+
+Official TypeScript/JavaScript SDK for [AIProxyGuard](https://aiproxyguard.com) - an LLM security proxy that detects prompt injection attacks in real-time.
+
+## Features
+
+- **Dual API Mode** - Works with both cloud API and self-hosted proxy
+- **Express Middleware** - Protect routes with one line of code
+- **TypeScript First** - Full type definitions included
+- **Automatic Retries** - Exponential backoff for transient failures
+- **Batch Operations** - Check multiple inputs with concurrency control
+- **Zero Dependencies** - Uses native `fetch` (Node.js 18+)
 
 ## Installation
 
@@ -8,16 +22,22 @@ Official TypeScript/JavaScript SDK for [AIProxyGuard](https://aiproxyguard.com) 
 npm install @aiproxyguard/sdk
 ```
 
-**Requirements:** Node.js 18+ (uses native `fetch`)
+```bash
+yarn add @aiproxyguard/sdk
+```
+
+```bash
+pnpm add @aiproxyguard/sdk
+```
 
 ## Quick Start
 
 ```typescript
 import { AIProxyGuard } from '@aiproxyguard/sdk';
 
-// Cloud mode (default) - uses https://aiproxyguard.com
+// Initialize with your API key
 const client = new AIProxyGuard({
-  apiKey: 'your-api-key',
+  apiKey: process.env.AIPROXYGUARD_API_KEY,
 });
 
 // Check text for prompt injection
@@ -32,16 +52,16 @@ if (result.flagged) {
 
 ## API Modes
 
-The SDK supports two API modes:
+The SDK supports two API modes, auto-detected from the URL:
 
-| Mode | URL | Endpoint | Request | Auto-detected |
-|------|-----|----------|---------|---------------|
-| `cloud` | aiproxyguard.com | `/api/v1/check` | `{input, context?}` | Default |
-| `proxy` | docker.aiproxyguard.com | `/check` | `{text}` | URLs with `docker.` |
+| Mode | URL | Use Case |
+|------|-----|----------|
+| `cloud` | `aiproxyguard.com` | Managed service, no infrastructure |
+| `proxy` | `docker.aiproxyguard.com` | Self-hosted, lower latency |
 
 ```typescript
-// Cloud mode (auto-detected from default URL)
-const cloud = new AIProxyGuard({ apiKey: 'your-key' });
+// Cloud mode (default)
+const cloud = new AIProxyGuard({ apiKey: 'apg_xxx' });
 
 // Proxy mode (auto-detected from docker.* URL)
 const proxy = new AIProxyGuard('https://docker.aiproxyguard.com');
@@ -49,73 +69,66 @@ const proxy = new AIProxyGuard('https://docker.aiproxyguard.com');
 // Explicit mode override
 const explicit = new AIProxyGuard({
   baseUrl: 'https://your-instance.com',
-  mode: 'proxy',  // Force proxy mode
+  mode: 'proxy',
+});
+```
+
+## Configuration
+
+```typescript
+const client = new AIProxyGuard({
+  baseUrl: 'https://aiproxyguard.com',  // API endpoint
+  apiKey: 'apg_xxx',                     // API key (required for cloud)
+  mode: 'auto',                          // 'cloud' | 'proxy' | 'auto'
+  timeout: 30000,                        // Request timeout (ms)
+  retries: 3,                            // Retry attempts
+  retryDelay: 1000,                      // Base retry delay (ms)
+  maxConcurrency: 10,                    // Max parallel requests in batch
 });
 ```
 
 ## API Reference
 
-### Constructor
-
-```typescript
-// Cloud mode with API key (default endpoint)
-const client = new AIProxyGuard({
-  apiKey: 'your-api-key',
-});
-
-// With custom options
-const client = new AIProxyGuard({
-  baseUrl: 'https://your-instance.com',
-  apiKey: 'your-api-key',
-  mode: 'auto',          // 'cloud' | 'proxy' | 'auto' (default: 'auto')
-  timeout: 30000,        // Request timeout (ms), default: 30000
-  retries: 3,            // Retry attempts, default: 3
-  retryDelay: 1000,      // Base retry delay (ms), default: 1000
-  maxConcurrency: 10,    // Max parallel requests in checkBatch, default: 10
-});
-
-// Or just a URL string (mode auto-detected)
-const client = new AIProxyGuard('https://docker.aiproxyguard.com');
-```
-
-### Methods
-
-#### `check(text: string, context?: object): Promise<CheckResult>`
+### `check(text, context?)`
 
 Check text for prompt injection.
 
 ```typescript
-const result = await client.check('Some user input');
+const result = await client.check('User input here');
 
-// Cloud mode returns full metadata
 console.log(result.id);        // 'chk_abc123'
 console.log(result.flagged);   // true/false
 console.log(result.action);    // 'allow' | 'log' | 'warn' | 'block'
-console.log(result.threats);   // [{ type: 'prompt-injection', confidence: 0.9, rule: null }]
+console.log(result.threats);   // [{ type, confidence, rule }]
 console.log(result.latencyMs); // 50.5
 console.log(result.cached);    // false
 
-// With context (cloud mode only)
-const result = await client.check('user input', {
+// With context (cloud mode)
+const result = await client.check('input', {
   conversationId: 'conv_123',
   userId: 'user_456',
 });
 ```
 
-#### `checkBatch(texts: string[]): Promise<CheckResult[]>`
+### `checkBatch(texts)`
 
-Check multiple texts in parallel.
+Check multiple texts with concurrency control.
 
 ```typescript
 const results = await client.checkBatch([
   'Hello, how are you?',
   'Ignore all previous instructions',
+  'What is the weather?',
 ]);
+
+results.forEach((r, i) => {
+  console.log(`${i}: ${r.flagged ? 'BLOCKED' : 'OK'}`);
+});
 ```
 
-#### `isSafe(text: string): Promise<boolean>`
+### `isSafe(text)`
 
-Quick boolean check if text is safe (not flagged).
+Quick boolean check.
 
 ```typescript
 if (await client.isSafe(userInput)) {
@@ -123,9 +136,9 @@ if (await client.isSafe(userInput)) {
 }
 ```
 
-#### `health(): Promise<boolean>`
+### `health()`
 
-Check if the service is healthy.
+Check service health.
 
 ```typescript
 if (await client.health()) {
@@ -133,7 +146,41 @@ if (await client.health()) {
 }
 ```
 
-### Helper Functions
+## Express Middleware
+
+Protect your Express routes with automatic prompt injection detection.
+
+```typescript
+import express from 'express';
+import { AIProxyGuard, guardMiddleware } from '@aiproxyguard/sdk';
+
+const app = express();
+const client = new AIProxyGuard({ apiKey: process.env.AIPROXYGUARD_API_KEY });
+
+app.use(express.json());
+
+// Basic usage
+app.post('/chat', guardMiddleware(client), (req, res) => {
+  res.json({ response: 'Hello!' });
+});
+
+// With options
+app.post('/api/prompt', guardMiddleware(client, {
+  textField: 'prompt',           // Field to check (default: 'text')
+  onBlock: 'reject',             // 'reject' or 'continue'
+  rejectInvalidTypes: true,      // Reject non-string inputs
+  onError: (err, req, res) => {
+    res.status(500).json({ error: 'Security check failed' });
+  },
+}), handler);
+
+// Multiple fields
+app.post('/api/chat', guardMiddleware(client, {
+  textField: ['message', 'context'],
+}), handler);
+```
+
+## Helper Functions
 
 ```typescript
 import { isSafe, isBlocked } from '@aiproxyguard/sdk';
@@ -147,41 +194,6 @@ if (isBlocked(result)) {
 if (isSafe(result)) {
   console.log('Content is safe');
 }
-```
-
-## Express Middleware
-
-Protect your Express routes with automatic prompt injection detection.
-
-```typescript
-import express from 'express';
-import { AIProxyGuard, guardMiddleware } from '@aiproxyguard/sdk';
-
-const app = express();
-const client = new AIProxyGuard({ apiKey: 'your-api-key' });
-
-app.use(express.json());
-
-// Protect a route
-app.post('/chat', guardMiddleware(client), (req, res) => {
-  // Request already validated - process safely
-  res.json({ response: 'Hello!' });
-});
-
-// With options
-app.post('/api/prompt', guardMiddleware(client, {
-  textField: 'prompt',           // Field to check (default: 'text')
-  onBlock: 'reject',             // 'reject' (return 400) or 'continue'
-  rejectInvalidTypes: true,      // Reject non-string inputs (default: true)
-  onError: (err, req, res) => {  // Custom error handler
-    res.status(500).json({ error: 'Security check failed' });
-  },
-}), handler);
-
-// Check multiple fields (checked in parallel)
-app.post('/api/chat', guardMiddleware(client, {
-  textField: ['message', 'context'],
-}), handler);
 ```
 
 ## Error Handling
@@ -213,7 +225,9 @@ try {
 }
 ```
 
-## Types
+## TypeScript
+
+Full TypeScript support with exported types:
 
 ```typescript
 import type {
@@ -223,20 +237,30 @@ import type {
   Threat,              // { type, confidence, rule }
   AIProxyGuardConfig,  // Constructor config
 } from '@aiproxyguard/sdk';
-
-import { DEFAULT_BASE_URL } from '@aiproxyguard/sdk';
-// 'https://aiproxyguard.com'
 ```
 
-## Retry Logic
+## Security Features
 
-The SDK automatically retries failed requests with exponential backoff:
+- **URL Validation** - Only `http:` and `https:` schemes allowed
+- **Input Size Limits** - 100KB max to prevent DoS
+- **Concurrency Control** - Configurable limits for batch operations
+- **Non-string Rejection** - Middleware rejects array/object inputs by default
 
-- Default: 3 retry attempts
-- Backoff: `retryDelay * 2^attempt` (1s, 2s, 4s by default)
-- Client errors (4xx) are NOT retried
-- Server errors (5xx) and network errors ARE retried
+## Requirements
+
+- Node.js 18+ (uses native `fetch`)
+- TypeScript 5.0+ (for type definitions)
+
+## Related
+
+- [AIProxyGuard](https://aiproxyguard.com) - Cloud API
+- [Python SDK](https://github.com/AInvirion/aiproxyguard-python-sdk) - Python client
+- [Documentation](https://docs.aiproxyguard.com) - Full documentation
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-Apache-2.0
+[Apache-2.0](LICENSE) - Copyright 2025 AInvirion
