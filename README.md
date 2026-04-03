@@ -251,11 +251,23 @@ import type {
 - Node.js 18+ (uses native `fetch`)
 - TypeScript 5.0+ (for type definitions)
 
+## Getting an API Key
+
+1. Sign up at [aiproxyguard.com](https://aiproxyguard.com)
+2. Navigate to **Settings** → **API Keys**
+3. Click **Create API Key**
+4. Copy your key (starts with `apg_`)
+
+## Documentation
+
+For detailed documentation, guides, and API reference, visit:
+
+**[https://ainvirion.github.io/aiproxyguard/](https://ainvirion.github.io/aiproxyguard/)**
+
 ## Related
 
 - [AIProxyGuard](https://aiproxyguard.com) - Cloud API
 - [Python SDK](https://github.com/AInvirion/aiproxyguard-python-sdk) - Python client
-- [Documentation](https://docs.aiproxyguard.com) - Full documentation
 
 ## Contributing
 
@@ -263,4 +275,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-[Apache-2.0](LICENSE) - Copyright 2025 AInvirion
+[Apache-2.0](LICENSE) - Copyright 2026 AINVIRION

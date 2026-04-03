@@ -38,15 +38,18 @@
     "sdk",
     "typescript"
   ],
-  "author": "AINVIRION",
+  "author": {
+    "name": "AINVIRION",
+    "email": "support@ainvirion.com"
+  },
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ainvirion/aiproxyguard-sdk"
+    "url": "https://github.com/AInvirion/aiproxyguard-npm-sdk"
   },
-  "homepage": "https://aiproxyguard.com",
+  "homepage": "https://ainvirion.github.io/aiproxyguard/",
   "bugs": {
-    "url": "https://github.com/ainvirion/aiproxyguard-sdk/issues"
+    "url": "https://github.com/AInvirion/aiproxyguard-npm-sdk/issues"
   },
   "engines": {
     "node": ">=18.0.0"
