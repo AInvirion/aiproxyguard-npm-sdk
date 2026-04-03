@@ -1,5 +1,5 @@
 {
-  "name": "@ainvirion/aiproxyguard-sdk",
+  "name": "@ainvirion/aiproxyguard-npm-sdk",
   "version": "1.0.14",
   "description": "Official TypeScript/JavaScript SDK for AIProxyGuard - LLM security proxy for prompt injection detection",
   "main": "dist/index.js",
