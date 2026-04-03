@@ -71,7 +71,11 @@ jobs:
       - name: Publish (dry run)
         if: ${{ github.event.inputs.dry-run == 'true' }}
         run: npm publish --dry-run --access public --provenance
+        env:
+          NPM_CONFIG_PROVENANCE: 'true'
 
       - name: Publish to npm
         if: ${{ github.event.inputs.dry-run != 'true' }}
         run: npm publish --access public --provenance
+        env:
+          NPM_CONFIG_PROVENANCE: 'true'
