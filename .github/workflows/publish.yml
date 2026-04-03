@@ -58,7 +58,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci
@@ -71,7 +70,7 @@ jobs:
 
       - name: Publish (dry run)
         if: ${{ github.event.inputs.dry-run == 'true' }}
-        run: npm publish --dry-run --access public
+        run: npm publish --dry-run --access public --provenance
 
       - name: Publish to npm
         if: ${{ github.event.inputs.dry-run != 'true' }}
