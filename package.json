@@ -1,6 +1,6 @@
 {
   "name": "@ainvirion/aiproxyguard-npm-sdk",
-  "version": "1.0.20",
+  "version": "1.1.0",
   "description": "Official TypeScript/JavaScript SDK for AIProxyGuard - LLM security proxy for prompt injection detection",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -23,6 +23,8 @@
     "LICENSE"
   ],
   "scripts": {
+    "sync-version": "node -e \"const v=require('./package.json').version; require('fs').writeFileSync('src/version.ts', '/**\\n * SDK version - auto-synced from package.json\\n */\\nexport const version = \\x27'+v+'\\x27;\\n')\"",
+    "prebuild": "npm run sync-version",
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",

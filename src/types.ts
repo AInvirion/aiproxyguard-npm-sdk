@@ -7,7 +7,7 @@ export const DEFAULT_BASE_URL = 'https://aiproxyguard.com';
  * API mode determines endpoint paths and request/response formats.
  * - 'cloud': Uses /api/v1/check with {input} request format
  * - 'proxy': Uses /check with {text} request format
- * - 'auto': Auto-detect based on URL (docker.* = proxy, otherwise cloud)
+ * - 'auto': Auto-detect based on URL (aiproxyguard.com without docker. = cloud, otherwise proxy)
  */
 export type ApiMode = 'cloud' | 'proxy' | 'auto';
 
@@ -99,3 +99,20 @@ export interface ErrorResponse {
     code?: string;
   };
 }
+
+/**
+ * Result from submitting feedback for a check.
+ */
+export interface FeedbackResult {
+  /** Whether the feedback was submitted successfully */
+  success: boolean;
+  /** The check ID that was updated */
+  checkId: string;
+  /** The feedback value that was recorded */
+  feedback: 'confirmed' | 'false_positive';
+}
+
+/**
+ * Feedback type for a check result.
+ */
+export type FeedbackType = 'confirmed' | 'false_positive';
