@@ -7,7 +7,7 @@ export const DEFAULT_BASE_URL = 'https://aiproxyguard.com';
  * API mode determines endpoint paths and request/response formats.
  * - 'cloud': Uses /api/v1/check with {input} request format
  * - 'proxy': Uses /check with {text} request format
- * - 'auto': Auto-detect based on URL (docker.* = proxy, otherwise cloud)
+ * - 'auto': Auto-detect based on URL (aiproxyguard.com without docker. = cloud, otherwise proxy)
  */
 export type ApiMode = 'cloud' | 'proxy' | 'auto';
 

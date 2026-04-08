@@ -23,6 +23,8 @@
     "LICENSE"
   ],
   "scripts": {
+    "sync-version": "node -e \"const v=require('./package.json').version; require('fs').writeFileSync('src/version.ts', '/**\\n * SDK version - auto-synced from package.json\\n */\\nexport const version = \\x27'+v+'\\x27;\\n')\"",
+    "prebuild": "npm run sync-version",
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",

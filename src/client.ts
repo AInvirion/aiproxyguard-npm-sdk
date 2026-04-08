@@ -115,19 +115,17 @@ export class AIProxyGuard {
   private parseRetryAfter(value: string | null): number | undefined {
     if (!value) return undefined;
 
-    // Try integer seconds first
-    const seconds = parseInt(value, 10);
-    if (!isNaN(seconds)) return seconds;
+    // Try integer seconds first (must be all digits)
+    if (/^\d+$/.test(value.trim())) {
+      return parseInt(value, 10);
+    }
 
-    // Try HTTP-date format
-    try {
-      const date = new Date(value);
-      if (!isNaN(date.getTime())) {
-        const delta = Math.max(0, Math.floor((date.getTime() - Date.now()) / 1000));
-        return delta;
-      }
-    } catch {
-      // Invalid format, ignore
+    // Try HTTP-date format (new Date never throws, returns Invalid Date)
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      // Use ceil to ensure we wait at least the requested time (avoid 0 for subsecond waits)
+      const delta = Math.max(0, Math.ceil((date.getTime() - Date.now()) / 1000));
+      return delta;
     }
 
     return undefined;
@@ -238,8 +236,9 @@ export class AIProxyGuard {
    * ```
    */
   async check(text: string, context?: Record<string, unknown>): Promise<CheckResult> {
-    // Validate input size to prevent DoS
-    if (text.length > MAX_INPUT_SIZE) {
+    // Validate input size to prevent DoS (use byte length for accurate measurement)
+    const byteLength = new TextEncoder().encode(text).length;
+    if (byteLength > MAX_INPUT_SIZE) {
       throw new ValidationError(
         `Input exceeds maximum size of ${MAX_INPUT_SIZE} bytes`,
         'input_too_large'
@@ -487,6 +486,11 @@ export class AIProxyGuard {
       );
     }
 
+    const trimmedCheckId = checkId?.trim();
+    if (!trimmedCheckId) {
+      throw new ValidationError('checkId is required', 'invalid_check_id');
+    }
+
     if (feedback !== 'confirmed' && feedback !== 'false_positive') {
       throw new ValidationError(
         "feedback must be 'confirmed' or 'false_positive'",
@@ -495,18 +499,41 @@ export class AIProxyGuard {
     }
 
     const body: Record<string, unknown> = {
-      check_id: checkId,
+      check_id: trimmedCheckId,
       feedback,
     };
     if (comment) {
       body.comment = comment;
     }
 
-    const response = await this.fetchWithRetry(`${this.baseUrl}/api/v1/feedback`, {
-      method: 'POST',
-      headers: this.getHeaders(),
-      body: JSON.stringify(body),
-    });
+    // Use direct fetch without retry for non-idempotent POST (avoids duplicate submissions)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}/api/v1/feedback`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+    } catch (e) {
+      clearTimeout(timeoutId);
+      if (e instanceof Error && e.name === 'AbortError') {
+        throw new TimeoutError();
+      }
+      if (e instanceof TypeError) {
+        throw new ConnectionError();
+      }
+      throw e;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    if (!response.ok) {
+      await this.handleError(response);
+    }
 
     const data = (await response.json()) as {
       success: boolean;
