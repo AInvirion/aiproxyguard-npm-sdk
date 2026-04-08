@@ -8,6 +8,8 @@ export type {
   ApiMode,
   CheckResult,
   ErrorResponse,
+  FeedbackResult,
+  FeedbackType,
   HealthStatus,
   ReadinessStatus,
   ServiceInfo,
@@ -16,6 +18,7 @@ export type {
 
 // Constants
 export { DEFAULT_BASE_URL } from './types.js';
+export { version } from './version.js';
 
 // Errors
 export {

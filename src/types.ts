@@ -99,3 +99,20 @@ export interface ErrorResponse {
     code?: string;
   };
 }
+
+/**
+ * Result from submitting feedback for a check.
+ */
+export interface FeedbackResult {
+  /** Whether the feedback was submitted successfully */
+  success: boolean;
+  /** The check ID that was updated */
+  checkId: string;
+  /** The feedback value that was recorded */
+  feedback: 'confirmed' | 'false_positive';
+}
+
+/**
+ * Feedback type for a check result.
+ */
+export type FeedbackType = 'confirmed' | 'false_positive';
